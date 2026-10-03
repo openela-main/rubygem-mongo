@@ -5,11 +5,16 @@
 
 Name: rubygem-%{gem_name}
 Version: 2.5.1
-Release: 2%{?dist}
+Release: 3%{?dist}
 Summary: Ruby driver for MongoDB
 License: ASL 2.0
 URL: http://www.mongodb.org
 Source0: https://rubygems.org/gems/%{gem_name}-%{version}.gem
+# Fix CVE-2026-88030.
+# Tests not included, they require mongodb that's not available in RHEL.
+# Backported from:
+# https://github.com/mongodb/mongo-ruby-driver/commit/ed62bb56c2e24c79113709331862d0aa3da74c6d
+Patch0: rubygem-mongo-2.26.0-Fix-Data-disclosure-and-denial-of-service-via-query-operator-injection-CVE-2026-88030.patch
 BuildRequires: ruby(release)
 BuildRequires: rubygems-devel
 BuildRequires: ruby
@@ -37,6 +42,8 @@ Documentation for %{name}.
 gem unpack %{SOURCE0}
 
 %setup -q -D -T -n  %{gem_name}-%{version}
+
+%patch -P 0 -p1
 
 gem spec %{SOURCE0} -l --ruby > %{gem_name}.gemspec
 
@@ -100,6 +107,11 @@ popd
 %{gem_instdir}/spec
 
 %changelog
+* Mon Sep 21 2026 Jarek Prokop <jprokop@redhat.com> - 2.5.1-3
+- Fix Data disclosure and denial of service via query-operator injection.
+  (CVE-2026-88030)
+  Resolves: RHEL-259675
+
 * Thu May 16 2019 Jun Aruga <jaruga@redhat.com> - 2.5.1-2
 - Disable tests to fix FTBFS by dropped MongoDB module.
   Resolves: rhbz#1710863
